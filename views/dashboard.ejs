@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuruluş Yeri Seçimi KDS</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f0f2f5; margin: 0; overflow: hidden; }
+        
+        .dashboard-container { display: flex; height: 100vh; width: 100%; }
+        
+        
+        .sidebar { width: 300px; background: #2c3e50; color: white; padding: 20px; overflow-y: auto; flex-shrink: 0; box-shadow: 4px 0 15px rgba(0,0,0,0.1); z-index: 100; }
+        
+        
+        .main-content {
+            flex-grow: 1; overflow-y: auto; padding: 30px; 
+            padding-bottom: 150px; 
+            text-align: left;
+        }
+
+        
+        .chart-card {
+            background: white; border-radius: 12px; padding: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 25px;
+            height: 400px;
+            display: flex; flex-direction: column;
+        }
+        
+        .chart-header {
+            font-size: 13px; font-weight: 700; color: #555; text-transform: uppercase;
+            border-bottom: 2px solid #f0f2f5; padding-bottom: 10px; margin-bottom: 15px;
+            display: flex; justify-content: space-between;
+        }
+
+        .chart-safe-zone { position: relative; flex-grow: 1; width: 100%; overflow: hidden; }
+
+        
+        .map-card { padding: 5px; background: white; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 30px; }
+        .map-box { height: 500px; border-radius: 12px; z-index: 1; }
+
+        
+        .legend { background: white; padding: 8px; border-radius: 4px; box-shadow: 0 0 10px rgba(0,0,0,0.2); font-size: 11px; line-height: 18px; color: #333; }
+        .legend img { width: 12px; height: 20px; vertical-align: middle; margin-right: 5px; }
+
+        
+        .btn-update { background-color: #f1c40f; color: #2c3e50; font-weight: bold; width: 100%; border: none; padding: 10px; border-radius: 8px; margin-top: 10px; }
+        .btn-update:hover { background-color: #f39c12; }
+        .form-range::-webkit-slider-thumb { background: #e67e22; }
+        .btn-menu { width: 100%; text-align: left; background: rgba(255,255,255,0.05); color: #ddd; border: none; padding: 8px; margin-bottom: 5px; border-radius: 4px; font-size: 13px; }
+        .btn-menu:hover { background: rgba(255,255,255,0.15); color: #fff; }
+        
+        ::-webkit-scrollbar { width: 8px; background: #2c3e50; } ::-webkit-scrollbar-thumb { background: #7f8c8d; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <div class="d-flex align-items-center mb-4 text-warning">
+            <i class="fas fa-industry fa-2x me-2"></i>
+            <h5 class="mb-0 fw-bold ms-2">KURULUŞ YERİ SEÇİM DASHBOARD</h5>
+        </div>
+        
+        <label class="small text-white-50 fw-bold mb-2"></label>
+        <button class="btn-menu" data-bs-toggle="modal" data-bs-target="#modalPazarlar"><i class="fas fa-shopping-cart me-2"></i> PAZARLAR</button>
+        <button class="btn-menu" data-bs-toggle="modal" data-bs-target="#modalAdaylar"><i class="fas fa-drafting-compass me-2"></i> ADAYLAR</button>
+        <button class="btn-menu" data-bs-toggle="modal" data-bs-target="#modalMevcut"><i class="fas fa-industry me-2"></i> MEVCUTTAKİ TESİSLER</button>
+        <button class="btn-menu" data-bs-toggle="modal" data-bs-target="#modalTedarik"><i class="fas fa-truck-loading me-2"></i> TEDARİKÇİLER</button>
+        
+        <hr class="border-secondary opacity-50">
+
+        <form action="/" method="POST">
+            <label class="small text-warning fw-bold mb-3">PARAMETRELER</label>
+            <div class="mb-3"><small class="text-white">ÜRÜN DAĞITIM MALİYETİ: <%= seciliDagitim %> TL</small><input type="range" class="form-range" min="0.01" max="0.50" step="0.01" name="dagitim_maliyeti" value="<%= seciliDagitim %>" oninput="this.previousElementSibling.innerText='Dağıtım: '+this.value+' TL'"></div>
+            <div class="mb-3"><small class="text-white">HAMMADDE TAŞIMA MALİYETİ: <%= seciliHammadde %> TL</small><input type="range" class="form-range" min="1.00" max="10.00" step="0.50" name="hammadde_maliyeti" value="<%= seciliHammadde %>" oninput="this.previousElementSibling.innerText='Hammadde: '+this.value+' TL'"></div>
+            <div class="mb-3"><small class="text-white">PAZAR BÜYÜME ORANI </small><div class="input-group input-group-sm"><select class="form-select" name="secilen_pazar"><option value="">Tümü</option><% pazarlar.forEach(p=>{ %><option value="<%= p.id %>" <%= p.id==seciliPazar?'selected':'' %>><%= p.pazar_adi %></option><% }) %></select><input type="number" class="form-control" name="buyume_orani" value="<%= seciliBuyume %>" placeholder="%"></div></div>
+            <button class="btn btn-update shadow">GÜNCELLE</button>
+        </form>
+        <hr class="border-secondary opacity-50 mt-4">
+
+        <div class="bg-white text-dark p-3 rounded">
+            <small class="fw-bold text-primary">ULAŞTIRMA MALİYETİ ÖLÇER</small>
+            <select id="n1" class="form-select form-select-sm mb-2 mt-2"><option disabled selected>Çıkış</option><optgroup label="Adaylar"><% adaylar.forEach(a=>{ %><option value="<%= a.enlem %>,<%= a.boylam %>"><%= a.arsa_adi %></option><% }) %></optgroup></select>
+            <select id="n2" class="form-select form-select-sm mb-2"><option disabled selected>Varış</option><% pazarlar.forEach(p=>{ %><option value="<%= p.enlem %>,<%= p.boylam %>"><%= p.pazar_adi %></option><% }) %></select>
+            <button onclick="hesapla()" class="btn btn-sm btn-primary w-100">HESAPLA</button>
+            <div id="sonuc" class="small text-center text-danger mt-2 fw-bold"></div>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <% if(mesaj) { %> <div class="alert alert-success py-2 small shadow-sm"><i class="fas fa-check-circle me-2"></i> <%= mesaj %></div> <% } %>
+        
+        <div class="map-card"><div id="map" class="map-box"></div></div>
+
+        <div class="row g-4">
+            <div class="col-md-6"><div class="chart-card"><div class="chart-header"> Lojistik Maliyet Dağılımı</div><div class="chart-safe-zone"><canvas id="c1"></canvas></div></div></div>
+            <div class="col-md-6"><div class="chart-card"><div class="chart-header"> Pazar Talep Dağılımı</div><div class="chart-safe-zone"><canvas id="c2"></canvas></div></div></div>
+            <div class="col-md-6"><div class="chart-card"><div class="chart-header d-flex justify-content-between"><span> Aday Kıyaslama</span><button class="btn btn-sm btn-light border py-0" data-bs-toggle="modal" data-bs-target="#modalRadar">Seç</button></div><div class="chart-safe-zone"><canvas id="c3"></canvas></div></div></div>
+            <div class="col-md-6"><div class="chart-card"><div class="chart-header"> Mevcut Kapasite Doluluk</div><div class="chart-safe-zone d-flex justify-content-center align-items-center"><div style="position:relative; height:200px; width:200px;"><canvas id="c4"></canvas><div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-weight:bold;font-size:28px;color:#e74c3c">%<%= doluluk %></div></div></div></div></div>
+        </div>
+    </main>
+</div>
+
+<div class="modal fade" id="modalRadar" tabindex="-1"><div class="modal-dialog modal-sm"><div class="modal-content"><div class="modal-header py-2"><h6>Seçim</h6><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><div id="radarOptions"></div></div><div class="modal-footer py-1"><button class="btn btn-primary btn-sm w-100" data-bs-dismiss="modal" onclick="updateRadar()">Güncelle</button></div></div></div></div>
+<div class="modal fade" id="modalPazarlar" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h6>Pazarlar</h6><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body p-0"><table class="table table-striped m-0"><thead><tr><th>Ad</th><th>Talep</th></tr></thead><tbody><% pazarlar.forEach(p=>{ %><tr><td><%= p.pazar_adi %></td><td><%= p.yillik_talep_adet %></td></tr><% }) %></tbody></table></div></div></div></div>
+<div class="modal fade" id="modalAdaylar" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header"><h6>Adaylar</h6><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body p-0"><table class="table table-striped m-0"><thead><tr><th>Ad</th><th>Fiyat</th><th>Kapasite</th></tr></thead><tbody><% adaylar.forEach(a=>{ %><tr><td><%= a.arsa_adi %></td><td><%= a.arsa_maliyeti_tl %></td><td><%= a.planlanan_kapasite %></td></tr><% }) %></tbody></table></div></div></div></div>
+<div class="modal fade" id="modalMevcut" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h6>Mevcut</h6><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body p-0"><table class="table table-striped m-0"><thead><tr><th>Ad</th><th>Kapasite</th></tr></thead><tbody><% mevcutTesisler.forEach(m=>{ %><tr><td><%= m.tesis_adi %></td><td><%= m.yillik_uretim_kapasitesi %></td></tr><% }) %></tbody></table></div></div></div></div>
+<div class="modal fade" id="modalTedarik" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h6>Tedarikçi</h6><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body p-0"><table class="table table-striped m-0"><thead><tr><th>Ad</th></tr></thead><tbody><% tedarikciler.forEach(t=>{ %><tr><td><%= t.tedarikci_adi %></td></tr><% }) %></tbody></table></div></div></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    const pazarlar = <%- JSON.stringify(pazarlar || []) %>;
+    const adaylar = <%- JSON.stringify(adaylar || []) %>;
+    const tedarikciler = <%- JSON.stringify(tedarikciler || []) %>;
+    const mevcutTesisler = <%- JSON.stringify(mevcutTesisler || []) %>;
+    const ideal = <%- JSON.stringify(ideal || null) %>;
+    const analiz = <%- JSON.stringify(analiz || []) %>;
+    const adayAnaliz = analiz.filter(x => x.tur === 'ADAY');
+
+    
+    const map = L.map('map').setView([39.0, 35.0], 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+    const icon = (c) => new L.Icon({ iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${c}.png`, shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png', iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41] });
+    
+    const lay = { p: L.layerGroup().addTo(map), a: L.layerGroup().addTo(map), m: L.layerGroup().addTo(map), t: L.layerGroup().addTo(map) };
+    
+    pazarlar.forEach(p => L.marker([p.enlem, p.boylam], {icon: icon('blue')})
+        .bindPopup(`<b>${p.pazar_adi}</b><br>Talep: ${Number(p.yillik_talep_adet).toLocaleString()}`)
+        .bindTooltip(p.pazar_adi)
+        .addTo(lay.p));
+        
+    adaylar.forEach(a => L.marker([a.enlem, a.boylam], {icon: icon('green')})
+        .bindPopup(`<b>${a.arsa_adi}</b><br>Fiyat: ${Number(a.arsa_maliyeti_tl).toLocaleString()} TL<br>Kapasite: ${a.planlanan_kapasite}`)
+        .bindTooltip(a.arsa_adi)
+        .addTo(lay.a));
+        
+    mevcutTesisler.forEach(m => L.marker([m.enlem, m.boylam], {icon: icon('red')})
+        .bindPopup(`<b>${m.tesis_adi}</b><br>Kapasite: ${Number(m.yillik_uretim_kapasitesi).toLocaleString()}`)
+        .bindTooltip(m.tesis_adi)
+        .addTo(lay.m));
+        
+    tedarikciler.forEach(t => L.marker([t.enlem, t.boylam], {icon: icon('black')})
+        .bindPopup(`<b>${t.tedarikci_adi}</b>`)
+        .bindTooltip(t.tedarikci_adi)
+        .addTo(lay.t));
+        
+    if(ideal) L.marker([ideal.ideal_enlem, ideal.ideal_boylam], {icon: icon('gold')}).bindPopup("<b>İdeal Nokta</b>").addTo(map);
+
+    
+    const leg = L.control({position: 'bottomright'});
+    leg.onAdd = function() {
+        const d = L.DomUtil.create('div', 'legend');
+        const iUrl = "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/";
+        d.innerHTML = `<strong>Katmanlar</strong><br>
+        <div onclick="tl('p')" style="cursor:pointer; display:flex; align-items:center; gap:5px; margin-bottom:2px;"><img src="${iUrl}marker-icon-blue.png" height="15"> Pazarlar</div>
+        <div onclick="tl('a')" style="cursor:pointer; display:flex; align-items:center; gap:5px; margin-bottom:2px;"><img src="${iUrl}marker-icon-green.png" height="15"> Adaylar</div>
+        <div onclick="tl('m')" style="cursor:pointer; display:flex; align-items:center; gap:5px; margin-bottom:2px;"><img src="${iUrl}marker-icon-red.png" height="15"> Mevcut</div>
+        <div onclick="tl('t')" style="cursor:pointer; display:flex; align-items:center; gap:5px;"><img src="${iUrl}marker-icon-black.png" height="15"> Tedarikçi</div>
+        <div style="display:flex; align-items:center; gap:5px;"><img src="${iUrl}marker-icon-gold.png" height="15"> İdeal</div>`;
+        return d;
+    };
+    leg.addTo(map);
+    function tl(k) { map.hasLayer(lay[k]) ? map.removeLayer(lay[k]) : map.addLayer(lay[k]); }
+
+    function hesapla() {
+        const n1 = document.getElementById('n1').value.split(','), n2 = document.getElementById('n2').value.split(',');
+        if(n1.length<2 || n2.length<2) return alert("Seçim yapın");
+        const d = Math.sqrt(Math.pow(n1[0]-n2[0],2) + Math.pow(n1[1]-n2[1],2)) * 111;
+        const c = parseFloat(document.querySelector('input[name="dagitim_maliyeti"]').value);
+        document.getElementById('sonuc').innerText = `Mesafe: ${d.toFixed(1)} km | Tutar: ${(d*c*20).toFixed(0)} TL`;
+    }
+
+    const opts = { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } };
+
+    new Chart(document.getElementById('c1'), { type: 'bar', data: { labels: adayAnaliz.map(x=>x.isim), datasets: [{label:'Hammadde', data:adayAnaliz.map(x=>x.hammadde_maliyeti), backgroundColor:'#3498db'}, {label:'Dağıtım', data:adayAnaliz.map(x=>x.dagitim_maliyeti), backgroundColor:'#e74c3c'}] }, options: {...opts, scales:{x:{stacked:true},y:{stacked:true}}} });
+    
+    new Chart(document.getElementById('c2'), { type: 'pie', data: { labels: pazarlar.map(p=>p.pazar_adi), datasets: [{data:pazarlar.map(p=>p.yillik_talep_adet), backgroundColor:['#f1c40f','#e67e22','#e74c3c','#9b59b6','#3498db']}] }, options: { ...opts, plugins: { legend: { position: 'right' } } } });
+
+    const rc = document.getElementById('radarOptions');
+    adayAnaliz.forEach((a,i) => { rc.innerHTML += `<div class="form-check"><input class="form-check-input r-check" type="checkbox" value="${a.isim}" ${i<3?'checked':''}><label class="form-check-label small">${a.isim}</label></div>`; });
+    const c3 = new Chart(document.getElementById('c3'), { type: 'radar', data: { labels: ['Maliyet','Pazar','Risk','Altyapı','İşgücü'], datasets: [] }, options: opts });
+    function updateRadar() {
+        const sel = Array.from(document.querySelectorAll('.r-check:checked')).map(c=>c.value);
+        const fil = adayAnaliz.filter(a=>sel.includes(a.isim));
+        c3.data.datasets = fil.map((a,i) => ({ label: a.isim, data: [100-(a.toplam_isletme_maliyeti/300000), 100-(a.dagitim_maliyeti/200000), 90, 80, 70], fill: true, backgroundColor: `rgba(${i*60+50},100,200,0.2)`, borderColor: `rgba(${i*60+50},100,200,1)` }));
+        c3.update();
+    }
+    updateRadar();
+
+    new Chart(document.getElementById('c4'), { type: 'doughnut', data: { labels: ['Dolu', 'Boş'], datasets: [{data:[<%= doluluk %>, 100-<%= doluluk %>], backgroundColor:['#e74c3c','#ecf0f1'], borderWidth:0}] }, options: { rotation: -90, circumference: 180, cutout: '75%', plugins: { legend: { display: false } } } });
+</script>
+</body>
+</html>
