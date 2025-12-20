@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kuruluş Yeri Seçimi KDS</title>
+    <title>YEŞİLCE TEKSTİL VE TİCARET A.Ş</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -17,7 +17,7 @@
         .dashboard-container { display: flex; height: 100vh; width: 100%; }
         
         
-        .sidebar { width: 300px; background: #2c3e50; color: white; padding: 20px; overflow-y: auto; flex-shrink: 0; box-shadow: 4px 0 15px rgba(0,0,0,0.1); z-index: 100; }
+        .sidebar { width: 300px; background: #2c3e50; color: white; padding: 20px; overflow-y: auto; flex-shrink: 0; box-shadow: 4px 0 15px rgba(0,0,0,0.1); z-index: 100; display:flex; flex-direction:column; }
         
         
         .main-content {
@@ -66,33 +66,35 @@
     <aside class="sidebar">
         <div class="d-flex align-items-center mb-4 text-warning">
             <i class="fas fa-industry fa-2x me-2"></i>
-            <h5 class="mb-0 fw-bold ms-2">KURULUŞ YERİ SEÇİM DASHBOARD</h5>
+            <h5 class="mb-0 fw-bold ms-2">KURULUŞ YERİ SEÇİMİ GÖSTERGE PANELİ</h5>
         </div>
         
         <label class="small text-white-50 fw-bold mb-2"></label>
         <button class="btn-menu" data-bs-toggle="modal" data-bs-target="#modalPazarlar"><i class="fas fa-shopping-cart me-2"></i> PAZARLAR</button>
         <button class="btn-menu" data-bs-toggle="modal" data-bs-target="#modalAdaylar"><i class="fas fa-drafting-compass me-2"></i> ADAYLAR</button>
-        <button class="btn-menu" data-bs-toggle="modal" data-bs-target="#modalMevcut"><i class="fas fa-industry me-2"></i> MEVCUTTAKİ TESİSLER</button>
+        <button class="btn-menu" data-bs-toggle="modal" data-bs-target="#modalMevcut"><i class="fas fa-industry me-2"></i> MEVCUT TESİSLER</button>
         <button class="btn-menu" data-bs-toggle="modal" data-bs-target="#modalTedarik"><i class="fas fa-truck-loading me-2"></i> TEDARİKÇİLER</button>
         
         <hr class="border-secondary opacity-50">
 
         <form action="/" method="POST">
             <label class="small text-warning fw-bold mb-3">PARAMETRELER</label>
-            <div class="mb-3"><small class="text-white">ÜRÜN DAĞITIM MALİYETİ: <%= seciliDagitim %> TL</small><input type="range" class="form-range" min="0.01" max="0.50" step="0.01" name="dagitim_maliyeti" value="<%= seciliDagitim %>" oninput="this.previousElementSibling.innerText='Dağıtım: '+this.value+' TL'"></div>
-            <div class="mb-3"><small class="text-white">HAMMADDE TAŞIMA MALİYETİ: <%= seciliHammadde %> TL</small><input type="range" class="form-range" min="1.00" max="10.00" step="0.50" name="hammadde_maliyeti" value="<%= seciliHammadde %>" oninput="this.previousElementSibling.innerText='Hammadde: '+this.value+' TL'"></div>
-            <div class="mb-3"><small class="text-white">PAZAR BÜYÜME ORANI </small><div class="input-group input-group-sm"><select class="form-select" name="secilen_pazar"><option value="">Tümü</option><% pazarlar.forEach(p=>{ %><option value="<%= p.id %>" <%= p.id==seciliPazar?'selected':'' %>><%= p.pazar_adi %></option><% }) %></select><input type="number" class="form-control" name="buyume_orani" value="<%= seciliBuyume %>" placeholder="%"></div></div>
+            <div class="mb-3"><small class="text-white">ÜRÜN DAĞITIM MALİYETİ: <%= seciliDagitim %> TL</small><input type="range" class="form-range" min="0.01" max="0.50" step="0.01" name="dagitim_maliyeti" value="<%= seciliDagitim %>" oninput="this.previousElementSibling.innerText='DAĞITIM: '+this.value+' TL'"></div>
+            <div class="mb-3"><small class="text-white">HAMMADDE TASIMA MALİYETİ: <%= seciliHammadde %> TL</small><input type="range" class="form-range" min="1.00" max="10.00" step="0.50" name="hammadde_maliyeti" value="<%= seciliHammadde %>" oninput="this.previousElementSibling.innerText='HAMMADDE: '+this.value+' TL'"></div>
+            <div class="mb-3"><small class="text-white">PAZAR BÜYÜME</small><div class="input-group input-group-sm"><select class="form-select" name="secilen_pazar"><option value="">Tümü</option><% pazarlar.forEach(p=>{ %><option value="<%= p.id %>" <%= p.id==seciliPazar?'selected':'' %>><%= p.pazar_adi %></option><% }) %></select><input type="number" class="form-control" name="buyume_orani" value="<%= seciliBuyume %>" placeholder="%"></div></div>
             <button class="btn btn-update shadow">GÜNCELLE</button>
         </form>
         <hr class="border-secondary opacity-50 mt-4">
 
-        <div class="bg-white text-dark p-3 rounded">
-            <small class="fw-bold text-primary">ULAŞTIRMA MALİYETİ ÖLÇER</small>
-            <select id="n1" class="form-select form-select-sm mb-2 mt-2"><option disabled selected>Çıkış</option><optgroup label="Adaylar"><% adaylar.forEach(a=>{ %><option value="<%= a.enlem %>,<%= a.boylam %>"><%= a.arsa_adi %></option><% }) %></optgroup></select>
-            <select id="n2" class="form-select form-select-sm mb-2"><option disabled selected>Varış</option><% pazarlar.forEach(p=>{ %><option value="<%= p.enlem %>,<%= p.boylam %>"><%= p.pazar_adi %></option><% }) %></select>
+        <div class="bg-white text-dark p-3 rounded mb-3">
+            <small class="fw-bold text-primary">ULAŞTIRMA MALİYETİ HESAPLAYICI</small>
+            <select id="n1" class="form-select form-select-sm mb-2 mt-2"><option disabled selected>Çıkış Noktası</option><optgroup label="Adaylar"><% adaylar.forEach(a=>{ %><option value="<%= a.enlem %>,<%= a.boylam %>"><%= a.arsa_adi %></option><% }) %></optgroup></select>
+            <select id="n2" class="form-select form-select-sm mb-2"><option disabled selected>Varış Noktası</option><% pazarlar.forEach(p=>{ %><option value="<%= p.enlem %>,<%= p.boylam %>"><%= p.pazar_adi %></option><% }) %></select>
             <button onclick="hesapla()" class="btn btn-sm btn-primary w-100">HESAPLA</button>
             <div id="sonuc" class="small text-center text-danger mt-2 fw-bold"></div>
         </div>
+
+        <a href="/logout" class="btn btn-danger btn-sm w-100 mt-auto"><i class="fas fa-sign-out-alt me-2"></i> ÇIKIŞ YAP</a>
     </aside>
 
     <main class="main-content">
@@ -135,26 +137,10 @@
     
     const lay = { p: L.layerGroup().addTo(map), a: L.layerGroup().addTo(map), m: L.layerGroup().addTo(map), t: L.layerGroup().addTo(map) };
     
-    pazarlar.forEach(p => L.marker([p.enlem, p.boylam], {icon: icon('blue')})
-        .bindPopup(`<b>${p.pazar_adi}</b><br>Talep: ${Number(p.yillik_talep_adet).toLocaleString()}`)
-        .bindTooltip(p.pazar_adi)
-        .addTo(lay.p));
-        
-    adaylar.forEach(a => L.marker([a.enlem, a.boylam], {icon: icon('green')})
-        .bindPopup(`<b>${a.arsa_adi}</b><br>Fiyat: ${Number(a.arsa_maliyeti_tl).toLocaleString()} TL<br>Kapasite: ${a.planlanan_kapasite}`)
-        .bindTooltip(a.arsa_adi)
-        .addTo(lay.a));
-        
-    mevcutTesisler.forEach(m => L.marker([m.enlem, m.boylam], {icon: icon('red')})
-        .bindPopup(`<b>${m.tesis_adi}</b><br>Kapasite: ${Number(m.yillik_uretim_kapasitesi).toLocaleString()}`)
-        .bindTooltip(m.tesis_adi)
-        .addTo(lay.m));
-        
-    tedarikciler.forEach(t => L.marker([t.enlem, t.boylam], {icon: icon('black')})
-        .bindPopup(`<b>${t.tedarikci_adi}</b>`)
-        .bindTooltip(t.tedarikci_adi)
-        .addTo(lay.t));
-        
+    pazarlar.forEach(p => L.marker([p.enlem, p.boylam], {icon: icon('blue')}).bindPopup(`<b>${p.pazar_adi}</b><br>Talep: ${Number(p.yillik_talep_adet).toLocaleString()}`).bindTooltip(p.pazar_adi).addTo(lay.p));
+    adaylar.forEach(a => L.marker([a.enlem, a.boylam], {icon: icon('green')}).bindPopup(`<b>${a.arsa_adi}</b><br>Fiyat: ${Number(a.arsa_maliyeti_tl).toLocaleString()} TL<br>Kapasite: ${a.planlanan_kapasite}`).bindTooltip(a.arsa_adi).addTo(lay.a));
+    mevcutTesisler.forEach(m => L.marker([m.enlem, m.boylam], {icon: icon('red')}).bindPopup(`<b>${m.tesis_adi}</b><br>Kapasite: ${Number(m.yillik_uretim_kapasitesi).toLocaleString()}`).bindTooltip(m.tesis_adi).addTo(lay.m));
+    tedarikciler.forEach(t => L.marker([t.enlem, t.boylam], {icon: icon('black')}).bindPopup(`<b>${t.tedarikci_adi}</b>`).bindTooltip(t.tedarikci_adi).addTo(lay.t));
     if(ideal) L.marker([ideal.ideal_enlem, ideal.ideal_boylam], {icon: icon('gold')}).bindPopup("<b>İdeal Nokta</b>").addTo(map);
 
     
@@ -162,12 +148,7 @@
     leg.onAdd = function() {
         const d = L.DomUtil.create('div', 'legend');
         const iUrl = "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/";
-        d.innerHTML = `<strong>Katmanlar</strong><br>
-        <div onclick="tl('p')" style="cursor:pointer; display:flex; align-items:center; gap:5px; margin-bottom:2px;"><img src="${iUrl}marker-icon-blue.png" height="15"> Pazarlar</div>
-        <div onclick="tl('a')" style="cursor:pointer; display:flex; align-items:center; gap:5px; margin-bottom:2px;"><img src="${iUrl}marker-icon-green.png" height="15"> Adaylar</div>
-        <div onclick="tl('m')" style="cursor:pointer; display:flex; align-items:center; gap:5px; margin-bottom:2px;"><img src="${iUrl}marker-icon-red.png" height="15"> Mevcut</div>
-        <div onclick="tl('t')" style="cursor:pointer; display:flex; align-items:center; gap:5px;"><img src="${iUrl}marker-icon-black.png" height="15"> Tedarikçi</div>
-        <div style="display:flex; align-items:center; gap:5px;"><img src="${iUrl}marker-icon-gold.png" height="15"> İdeal</div>`;
+        d.innerHTML = `<strong>Katmanlar</strong><br><div onclick="tl('p')" style="cursor:pointer; display:flex; align-items:center; gap:5px; margin-bottom:2px;"><img src="${iUrl}marker-icon-blue.png" height="15"> Pazarlar</div><div onclick="tl('a')" style="cursor:pointer; display:flex; align-items:center; gap:5px; margin-bottom:2px;"><img src="${iUrl}marker-icon-green.png" height="15"> Adaylar</div><div onclick="tl('m')" style="cursor:pointer; display:flex; align-items:center; gap:5px; margin-bottom:2px;"><img src="${iUrl}marker-icon-red.png" height="15"> Mevcut</div><div onclick="tl('t')" style="cursor:pointer; display:flex; align-items:center; gap:5px;"><img src="${iUrl}marker-icon-black.png" height="15"> Tedarikçi</div><div style="display:flex; align-items:center; gap:5px;"><img src="${iUrl}marker-icon-gold.png" height="15"> İdeal</div>`;
         return d;
     };
     leg.addTo(map);
@@ -181,10 +162,10 @@
         document.getElementById('sonuc').innerText = `Mesafe: ${d.toFixed(1)} km | Tutar: ${(d*c*20).toFixed(0)} TL`;
     }
 
+    
     const opts = { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } };
 
     new Chart(document.getElementById('c1'), { type: 'bar', data: { labels: adayAnaliz.map(x=>x.isim), datasets: [{label:'Hammadde', data:adayAnaliz.map(x=>x.hammadde_maliyeti), backgroundColor:'#3498db'}, {label:'Dağıtım', data:adayAnaliz.map(x=>x.dagitim_maliyeti), backgroundColor:'#e74c3c'}] }, options: {...opts, scales:{x:{stacked:true},y:{stacked:true}}} });
-    
     new Chart(document.getElementById('c2'), { type: 'pie', data: { labels: pazarlar.map(p=>p.pazar_adi), datasets: [{data:pazarlar.map(p=>p.yillik_talep_adet), backgroundColor:['#f1c40f','#e67e22','#e74c3c','#9b59b6','#3498db']}] }, options: { ...opts, plugins: { legend: { position: 'right' } } } });
 
     const rc = document.getElementById('radarOptions');
