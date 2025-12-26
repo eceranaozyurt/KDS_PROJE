@@ -19,6 +19,16 @@ app.use(session({
 
 app.use('/', webRoutes);
 
-app.listen(3000, () => {
-    console.log('🚀: http://localhost:3000');
-});
+
+
+const port = process.env.PORT || 3000;
+
+
+module.exports = app;
+
+
+if (require.main === module) {
+  app.listen(port, () => {
+    console.log(`Sunucu ${port} portunda çalışıyor...`);
+  });
+}
