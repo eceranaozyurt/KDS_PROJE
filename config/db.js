@@ -10,4 +10,37 @@ const pool = mysql.createPool({
     queueLimit: 0
 });
 
+
+
+
+const originalQuery = pool.query.bind(pool);
+const originalExecute = pool.execute.bind(pool);
+
+
+pool.query = async function (...args) {
+    try {
+        
+        return await originalQuery(...args);
+    } catch (err) {
+        
+        console.log(" Veritabanı Hatası: Bağlantı kurulamadı.");
+        console.log("Hata Detayı:", err.message);
+        
+        
+        return [[], null]; 
+    }
+};
+
+
+pool.execute = async function (...args) {
+    try {
+        return await originalExecute(...args);
+    } catch (err) {
+        console.log("Veritabanı Hatası: Execute işlemi başarısız.");
+        return [[], null];
+    }
+};
+
+
+
 module.exports = pool;
