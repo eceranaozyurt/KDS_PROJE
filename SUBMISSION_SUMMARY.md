@@ -137,42 +137,6 @@ Sağlanan Dosyalar:
 - .env.example - Ortam değişkenleri örneği
 - Kod comments - JSDoc format, iş kuralları açıklanmış
 
-## Proje Yapısı
-
-kds-proje/
-├── README.md - Ana dokümantasyon
-├── API_DOCUMENTATION.md - API rehberi
-├── API_TEST_GUIDE.js - Test komutları
-├── .env - Konfigürasyon (local)
-├── .env.example - Konfigürasyon örneği
-├── package.json - Bağımlılıklar
-├── app.js - Ana uygulama dosyası
-│
-├── models/
-│   ├── kdsModel.js - KDS analiz modeli
-│   └── pazarModel.js - Pazarlar CRUD modeli
-│
-├── controllers/
-│   ├── authController.js - Auth (Login/Logout)
-│   ├── kdsController.js - Dashboard & Senaryo
-│   └── pazarController.js - CRUD API + Senaryolar
-│
-├── routes/
-│   └── web.js - Tüm endpoint'ler
-│
-├── views/
-│   ├── login.ejs - Login formu
-│   └── dashboard.ejs - Main dashboard
-│
-├── middlewares/
-│   ├── guvenlik.js - Session auth
-│   └── errorHandler.js - Merkezi hata yönetimi
-│
-├── config/
-│   └── db.js - DB connection pool
-│
-└── public/ - Statik dosyalar
-
 
 ## Çalıştırma
 
