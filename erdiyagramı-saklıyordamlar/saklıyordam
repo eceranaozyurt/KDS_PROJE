@@ -1,0 +1,76 @@
+//MYSQL İçinde Kullanılan Saklı Yordamlar
+
+//İdeal Konumu Bulan Saklı Yordamlar
+// BEGIN
+//     -- Eğer parametre yoksa 0 kabul et
+//     IF buyume_orani IS NULL THEN SET buyume_orani = 0; END IF;
+
+//     SELECT 
+//         -- Ağırlıklı Enlem Ortalaması
+//         SUM(enlem * IF(id = secilen_pazar_id, yillik_talep_adet * (1 + buyume_orani/100), yillik_talep_adet)) 
+//         / 
+//         SUM(IF(id = secilen_pazar_id, yillik_talep_adet * (1 + buyume_orani/100), yillik_talep_adet)) 
+//         AS ideal_enlem,
+        
+//         -- Ağırlıklı Boylam Ortalaması
+//         SUM(boylam * IF(id = secilen_pazar_id, yillik_talep_adet * (1 + buyume_orani/100), yillik_talep_adet)) 
+//         / 
+//         SUM(IF(id = secilen_pazar_id, yillik_talep_adet * (1 + buyume_orani/100), yillik_talep_adet)) 
+//         AS ideal_boylam
+//     FROM pazarlar;
+// END
+// 
+
+//Detaylı Analiz Saklı Yordamı
+// BEGIN
+//     -- Güvenlik: Boş gelirse varsayılanları kullan
+//     IF girilen_dagitim_maliyeti IS NULL THEN SET girilen_dagitim_maliyeti = 0.05; END IF;
+//     IF girilen_hammadde_maliyeti IS NULL THEN SET girilen_hammadde_maliyeti = 3.00; END IF;
+//     IF buyume_orani IS NULL THEN SET buyume_orani = 0; END IF;
+
+//     -- HESAPLAMA SORGUSU
+//     SELECT 
+//         'ADAY' as tur, a.id, a.arsa_adi as isim, a.enlem, a.boylam, a.arsa_maliyeti_tl as yatirim_maliyeti, a.planlanan_kapasite as kapasite,
+        
+//         -- Hammadde Maliyeti (Değişmez)
+//         ROUND(SQRT(POW(t.enlem - a.enlem, 2) + POW(t.boylam - a.boylam, 2)) * 111 * IFNULL((SELECT SUM(alinan_hammadde_ton) FROM satin_alma_gecmisi WHERE islem_yili = 2024), 1000) * girilen_hammadde_maliyeti, 2) AS hammadde_maliyeti,
+
+//         -- Dağıtım Maliyeti (Pazar Büyümesi Dahil)
+//         ROUND((SELECT SUM(
+//             SQRT(POW(p.enlem - a.enlem, 2) + POW(p.boylam - a.boylam, 2)) * 111 
+//             * CASE 
+//                 -- Eğer "Tüm Pazarlar" seçildiyse HEPSİNİ artır
+//                 WHEN (secilen_pazar_id IS NULL OR secilen_pazar_id = '') THEN p.yillik_talep_adet * (1 + buyume_orani/100)
+//                 -- Eğer TEK bir pazar seçildiyse SADECE ONU artır
+//                 WHEN p.id = secilen_pazar_id THEN p.yillik_talep_adet * (1 + buyume_orani/100)
+//                 -- Diğer pazarları sabit tut
+//                 ELSE p.yillik_talep_adet 
+//             END
+//         ) FROM pazarlar p) * girilen_dagitim_maliyeti, 2) AS dagitim_maliyeti,
+
+//         -- Toplam İşletme Maliyeti (Hammadde + Dağıtım)
+//         ROUND(
+//             (SQRT(POW(t.enlem - a.enlem, 2) + POW(t.boylam - a.boylam, 2)) * 111 * IFNULL((SELECT SUM(alinan_hammadde_ton) FROM satin_alma_gecmisi WHERE islem_yili = 2024), 1000) * girilen_hammadde_maliyeti)
+//             +
+//             ((SELECT SUM(
+//                 SQRT(POW(p.enlem - a.enlem, 2) + POW(p.boylam - a.boylam, 2)) * 111 
+//                 * CASE 
+//                     WHEN (secilen_pazar_id IS NULL OR secilen_pazar_id = '') THEN p.yillik_talep_adet * (1 + buyume_orani/100)
+//                     WHEN p.id = secilen_pazar_id THEN p.yillik_talep_adet * (1 + buyume_orani/100)
+//                     ELSE p.yillik_talep_adet 
+//                 END
+//             ) FROM pazarlar p) * girilen_dagitim_maliyeti), 2
+//         ) AS toplam_isletme_maliyeti
+
+//     FROM aday_arsalar a JOIN tedarikciler t ON t.id = 'T01'
+
+//     UNION ALL
+
+//     -- Mevcut Tesisler İçin Aynı Hesaplama
+//     SELECT 
+//         'MEVCUT' as tur, m.id, m.tesis_adi as isim, m.enlem, m.boylam, 0 as yatirim_maliyeti, m.yillik_uretim_kapasitesi as kapasite,
+//         ROUND(SQRT(POW(t.enlem - m.enlem, 2) + POW(t.boylam - m.boylam, 2)) * 111 * IFNULL((SELECT SUM(alinan_hammadde_ton) FROM satin_alma_gecmisi WHERE islem_yili = 2024), 1000) * girilen_hammadde_maliyeti, 2) AS hammadde_maliyeti,
+//         ROUND((SELECT SUM(SQRT(POW(p.enlem - m.enlem, 2) + POW(p.boylam - m.boylam, 2)) * 111 * CASE WHEN (secilen_pazar_id IS NULL OR secilen_pazar_id = '') THEN p.yillik_talep_adet * (1 + buyume_orani/100) WHEN p.id = secilen_pazar_id THEN p.yillik_talep_adet * (1 + buyume_orani/100) ELSE p.yillik_talep_adet END) FROM pazarlar p) * girilen_dagitim_maliyeti, 2) AS dagitim_maliyeti,
+//         ROUND((SQRT(POW(t.enlem - m.enlem, 2) + POW(t.boylam - m.boylam, 2)) * 111 * IFNULL((SELECT SUM(alinan_hammadde_ton) FROM satin_alma_gecmisi WHERE islem_yili = 2024), 1000) * girilen_hammadde_maliyeti) + ((SELECT SUM(SQRT(POW(p.enlem - m.enlem, 2) + POW(p.boylam - m.boylam, 2)) * 111 * CASE WHEN (secilen_pazar_id IS NULL OR secilen_pazar_id = '') THEN p.yillik_talep_adet * (1 + buyume_orani/100) WHEN p.id = secilen_pazar_id THEN p.yillik_talep_adet * (1 + buyume_orani/100) ELSE p.yillik_talep_adet END) FROM pazarlar p) * girilen_dagitim_maliyeti), 2) AS toplam_isletme_maliyeti
+//     FROM mevcut_tesisler m JOIN tedarikciler t ON t.id = 'T01';
+// END
