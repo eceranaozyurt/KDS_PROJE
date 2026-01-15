@@ -83,54 +83,6 @@ uretim_gecmisi
 └── uretilen_adet
 ```
 
-## Kurulum
-
-### Gereksinimler
-
-- Node.js v14+
-- MySQL v5.7+
-- npm v6+
-
-### Adımlar
-
-1. Projeyi klonla
-```bash
-git clone https://github.com/kullanici/kds-proje.git
-cd kds-proje
-```
-
-2. Bağımlılıkları yükle
-```bash
-npm install
-```
-
-3. Ortam değişkenlerini ayarla
-```bash
-cp .env.example .env
-```
-
-4. .env dosyasını veritabanı bilgileriniz ile düzenle
-```
-DB_HOST=localhost
-DB_USER=root
-DB_PASSWORD=
-DB_NAME=tesis_yer_secimi
-```
-
-5. Veritabanı tablolarını oluştur (MySQL'de çalıştır)
-```sql
--- Gerekli SQL tabloları oluştur
-```
-
-6. Sunucuyu başlat
-```bash
-npm start
-```
-
-7. Tarayıcıda erişim
-```
-http://localhost:3000/login
-```
 
 ## Giriş Bilgileri
 
@@ -254,4 +206,5 @@ config/db.js - MySQL veritabanı bağlantı havuzunu oluşturur ve yönetir.
 Proje: Sunucu Tabanlı Programlama
 Tarih: 15 Ocak 2026
 Versiyon: 1.0.0
+
 
