@@ -3,11 +3,11 @@
 Dersin Adı: Sunucu Tabanlı Programlama
 Konu: MVC Mimarisi ile RESTful API Tasarımı
 Dil: Node.js (Express)
-Proje: Kuruluş Yeri Karar Destek Sistemi (KDS)
+Proje: Kuruluş Yeri Karar Destek Sistemi 
 
 ## Proje Gereksinimleri
 
-### 1. MVC Mimarisi (35%)
+### 1. MVC Mimarisi
 
 **Model Katmanı**
 - models/kdsModel.js - KDS analiz modeli (Stored Procedure'lar)
@@ -72,7 +72,7 @@ Ek İş Kuralları:
 - Büyüme Oranı: Dashboard senaryosunda pazar talebini %X artırabilir
 - Session: Login olmadan API ve dashboard'a erişilemez
 
-### 4. API Tasarımı & REST Uyumu (20%)
+### 4. API Tasarımı & REST Uyumu 
 
 HTTP Metodları:
 - GET: Veri okuma (List, Get)
@@ -106,7 +106,7 @@ RESTful Endpoint Tasarımı:
 - /api/pazarlar/scenario/top-markets - Senaryo 1
 - /api/pazarlar/scenario/region/:bolge - Senaryo 2
 
-### 5. Kod Kalitesi & Yapı (15%)
+### 5. Kod Kalitesi & Yapı 
 
 Code Organization:
 - Dosyalar mantıklı olarak organize edilmiş
@@ -128,7 +128,7 @@ Consistency:
 - Response format tutarlı
 - Validation mantığı tutarlı
 
-### 6. Dokümantasyon (10%)
+### 6. Dokümantasyon
 
 Sağlanan Dosyalar:
 - README.md - Proje açıklaması, kurulum, API özeti
@@ -173,14 +173,6 @@ kds-proje/
 │
 └── public/ - Statik dosyalar
 
-## Değerlendirme Puanları
-
-MVC Mimari Uyumu: 35/35
-API Tasarımı & REST: 20/20
-İş Kuralları & Senaryo: 20/20
-Kod Kalitesi & Yapı: 15/15
-Dokümantasyon: 10/10
-TOPLAM: 100/100
 
 ## Çalıştırma
 
@@ -202,6 +194,7 @@ node app.js
 Erişim:
 - Web: http://localhost:3000/login
 - API: http://localhost:3000/api/pazarlar
+-VERCEL:https://kurulusyerisecimkds.vercel.app/
 
 Giriş Bilgileri:
 - Kullanıcı: admin

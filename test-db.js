@@ -9,12 +9,12 @@ async function testConnection() {
     console.log('- DATABASE:', process.env.DB_NAME);
     
     try {
-        // Basit bir sorguda dene
+        
         const [users] = await db.execute('SELECT * FROM kullanicilar LIMIT 1');
         console.log('\n✅ Veritabanı bağlantısı başarılı!');
         console.log('Kullanıcılar tablosu yapısı:', users);
         
-        // Tüm kullanıcıları listele
+        
         const [allUsers] = await db.execute('SELECT * FROM kullanicilar');
         console.log('\nKullanıcılar:');
         allUsers.forEach(u => {
