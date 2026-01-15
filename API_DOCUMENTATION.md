@@ -295,26 +295,3 @@ Error:
   }
 }
 
-## Vercel'e Deploy
-
-1. Vercel CLI yükle:
-npm install -g vercel
-
-2. Vercel'e giriş yap:
-vercel login
-
-3. Projeyi deploy et:
-vercel
-
-4. Environment Variables Ayarla (Vercel Dashboard):
-- DB_HOST
-- DB_USER
-- DB_PASSWORD
-- DB_NAME
-
-5. Veritabanı Ayarı:
-MySQL veritabanınız Vercel'den erişilebilir olmalı
-(Remote MySQL sunucusu kullanın, localhost çalışmaz)
-
-6. Deploy Sonrası:
-https://yourproject.vercel.app
