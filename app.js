@@ -7,7 +7,7 @@ const errorHandler = require('./middlewares/errorHandler');
 
 const app = express();
 
-// CORS ayarları Vercel için
+// CORS ayarları
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
