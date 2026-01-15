@@ -82,6 +82,11 @@ uretim_gecmisi
 ├── yil
 └── uretilen_adet
 ```
+
+## ER Diyagramı
+
+![Database Diagram](erdiyagramı-saklıyordamlar/kds-er-diyagramı.png)
+
 ## Kurulum
 
 ### Gereksinimler
